@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle, Info, ArrowRight, Sparkles, TrendingDown } from "lucide-react";
-import { alerts, upcomingTasks } from "../data/mock";
+import { alerts } from "../data/mock";
+import { useTasks } from "../hooks/useData";
 import { Link } from "react-router-dom";
 import SpendingChart from "../components/SpendingChart";
 import DeadlineTimeline from "../components/DeadlineTimeline";
@@ -56,6 +57,8 @@ const quickLinks = [
 ];
 
 export default function Dashboard() {
+  const { data: tasks } = useTasks();
+
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
@@ -143,17 +146,17 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Task Queue</h2>
             <div className="space-y-2.5">
-              {upcomingTasks.map((task) => (
+              {tasks.slice(0, 5).map((task: any) => (
                 <div key={task.id} className="flex items-center gap-3">
                   <div
                     className={`w-2 h-2 rounded-full shrink-0 ${
-                      priorityDot[task.priority as keyof typeof priorityDot]
+                      priorityDot[task.priority as keyof typeof priorityDot] ?? priorityDot.low
                     }`}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-800 truncate">{task.title}</p>
                   </div>
-                  <p className="text-xs text-gray-400 whitespace-nowrap">{formatDate(task.due)}</p>
+                  <p className="text-xs text-gray-400 whitespace-nowrap">{formatDate(task.due_date)}</p>
                 </div>
               ))}
             </div>
