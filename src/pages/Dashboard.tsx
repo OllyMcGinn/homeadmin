@@ -1,10 +1,12 @@
-import { AlertTriangle, CheckCircle, Info, ArrowRight, Sparkles, TrendingDown } from "lucide-react";
+import { useState, useCallback } from "react";
+import { AlertTriangle, CheckCircle, Info, ArrowRight, Sparkles, TrendingDown, Plus } from "lucide-react";
 import { alerts } from "../data/mock";
 import { useTasks } from "../hooks/useData";
 import { Link } from "react-router-dom";
 import SpendingChart from "../components/SpendingChart";
 import DeadlineTimeline from "../components/DeadlineTimeline";
 import StatCard from "../components/StatCard";
+import AddTaskModal from "../components/AddTaskModal";
 
 const alertStyles = {
   urgent: {
@@ -57,7 +59,10 @@ const quickLinks = [
 ];
 
 export default function Dashboard() {
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [taskKey, setTaskKey] = useState(0);
   const { data: tasks } = useTasks();
+  const refreshTasks = useCallback(() => setTaskKey((k) => k + 1), []);
 
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -67,6 +72,7 @@ export default function Dashboard() {
   });
 
   return (
+    <>
     <div className="p-8 space-y-6 max-w-[1400px]">
       {/* Header */}
       <div className="flex items-end justify-between">
@@ -144,7 +150,15 @@ export default function Dashboard() {
 
           {/* Tasks */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Task Queue</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-gray-900">Task Queue</h2>
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-semibold"
+              >
+                <Plus size={13} /> Add
+              </button>
+            </div>
             <div className="space-y-2.5">
               {tasks.slice(0, 5).map((task: any) => (
                 <div key={task.id} className="flex items-center gap-3">
@@ -184,5 +198,12 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    {showAddTask && (
+      <AddTaskModal
+        onClose={() => setShowAddTask(false)}
+        onAdded={refreshTasks}
+      />
+    )}
+    </>
   );
 }
