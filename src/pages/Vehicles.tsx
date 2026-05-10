@@ -1,30 +1,30 @@
-import { Car, AlertTriangle, CheckCircle } from "lucide-react";
+import { Car } from "lucide-react";
 import { vehicles } from "../data/mock";
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function daysUntil(dateStr: string) {
-  const diff = new Date(dateStr).getTime() - Date.now();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
-function StatusBadge({ dateStr, label }: { dateStr: string; label: string }) {
+function DateBadge({ label, dateStr }: { label: string; dateStr: string }) {
   const days = daysUntil(dateStr);
   const urgent = days <= 30;
-  const warning = days <= 60;
+  const warning = days <= 60 && !urgent;
+  const ok = !urgent && !warning;
 
   return (
-    <div className={`rounded-lg p-3 border ${urgent ? "bg-red-50 border-red-200" : warning ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"}`}>
-      <p className={`text-xs font-medium ${urgent ? "text-red-600" : warning ? "text-amber-600" : "text-green-600"}`}>
+    <div className={`flex-1 rounded-xl p-3 border ${urgent ? "bg-red-50 border-red-200" : warning ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-100"}`}>
+      <p className={`text-[10px] font-semibold uppercase tracking-wide ${urgent ? "text-red-500" : warning ? "text-amber-500" : "text-gray-400"}`}>
         {label}
       </p>
-      <p className={`text-sm font-semibold mt-0.5 ${urgent ? "text-red-900" : warning ? "text-amber-900" : "text-green-900"}`}>
+      <p className={`text-sm font-bold mt-1 ${urgent ? "text-red-800" : warning ? "text-amber-800" : "text-gray-800"}`}>
         {formatDate(dateStr)}
       </p>
-      <p className={`text-xs mt-0.5 ${urgent ? "text-red-600" : warning ? "text-amber-600" : "text-green-600"}`}>
-        {days <= 0 ? "Overdue" : `${days} days`}
+      <p className={`text-xs mt-0.5 ${urgent ? "text-red-500" : warning ? "text-amber-500" : "text-gray-400"}`}>
+        {days <= 0 ? "Overdue" : days === 1 ? "Tomorrow" : `${days} days`}
       </p>
     </div>
   );
@@ -32,52 +32,63 @@ function StatusBadge({ dateStr, label }: { dateStr: string; label: string }) {
 
 export default function Vehicles() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <Car size={20} className="text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Vehicles</h1>
+    <div className="p-8 max-w-3xl space-y-6">
+      <div>
+        <div className="flex items-center gap-2.5 mb-1">
+          <div className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center">
+            <Car size={16} className="text-slate-700" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Vehicles</h1>
         </div>
-        <p className="text-gray-500 text-sm">MOT, tax, service history and more.</p>
+        <p className="text-gray-400 text-sm">MOT, road tax, service history and mileage tracking.</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {vehicles.map((v) => (
-          <div key={v.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                  <Car size={22} className="text-slate-600" />
+          <div key={v.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center">
+                  <Car size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg">
+                  <p className="font-bold text-gray-900 text-lg tracking-tight">
                     {v.make} {v.model}
                   </p>
-                  <p className="text-sm text-gray-500 font-mono">{v.reg}</p>
+                  <p className="text-xs font-mono text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md inline-block mt-1">
+                    {v.reg}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-400">Mileage</p>
-                <p className="font-semibold text-gray-900">{v.mileage.toLocaleString()} mi</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide">Mileage</p>
+                <p className="text-xl font-bold text-gray-900">{v.mileage.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">miles</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <StatusBadge dateStr={v.mot} label="MOT Expiry" />
-              <StatusBadge dateStr={v.tax} label="Tax Expiry" />
-              <StatusBadge dateStr={v.service} label="Last Service" />
+            <div className="px-6 py-4">
+              <div className="flex gap-3">
+                <DateBadge label="MOT Expiry" dateStr={v.mot} />
+                <DateBadge label="Road Tax" dateStr={v.tax} />
+                <DateBadge label="Last Service" dateStr={v.service} />
+              </div>
             </div>
 
-            <div className="flex gap-2">
-              <button className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                View History
+            <div className="px-6 pb-5 flex gap-2">
+              <button className="flex-1 border border-gray-200 text-gray-700 text-sm font-semibold py-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+                View Full History
               </button>
-              <button className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="flex-1 bg-slate-900 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-slate-800 transition-colors">
                 Book MOT
               </button>
             </div>
           </div>
         ))}
+
+        <button className="w-full border border-dashed border-gray-200 text-gray-400 text-sm py-3.5 rounded-2xl hover:bg-gray-50 transition-colors">
+          + Add vehicle
+        </button>
       </div>
     </div>
   );
